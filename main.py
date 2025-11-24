@@ -35,7 +35,7 @@ async def main():
         page = await browser.new_page()
         await page.goto("https://zjj.sz.gov.cn/szzjxx/web/pc/index")
         
-        # 等待页面加载完成（根据目标网站实际元素调整）
+        # 等待页面加载完成（根据目标网站实际实际元素调整）
         await page.wait_for_selector('#ztree')
 
         # 1. 获取所有年份（从API直接获取）
@@ -59,7 +59,7 @@ async def main():
 
         # 2. 遍历年份（从最新开始）
         for year in years:
-            # 获取该年份的所有期数（修复1：使用普通字符串+参数传递）
+            # 获取该年份的所有期数
             periods = await page.evaluate('''
                 async (year) => {
                     return new Promise((resolve) => {
@@ -86,7 +86,7 @@ async def main():
                 period_name = period['periodName']
                 print(f"正在处理: {period_name} (ID: {period_id})")
 
-                # 获取该期的分类列表（修复2：同样使用普通字符串+参数）
+                # 获取该期的分类列表
                 categories = await page.evaluate('''
                     async (period_id) => {
                         return new Promise((resolve) => {
@@ -119,7 +119,7 @@ async def main():
                     category_name = category['name']
                     print(f"  正在处理分类: {category_name}")
 
-                    # 分页获取所有数据（修复3：分页请求同样处理）
+                    # 分页获取所有数据
                     page_num = 1
                     while True:
                         data = await page.evaluate('''
@@ -163,7 +163,7 @@ async def main():
                                     period_name,
                                     category_id,
                                     category_name,
-                                    item.get('name', ''),
+                                    item.get('mc', ''),  # 修复：使用'mc'字段获取材料名称
                                     item.get('gg', ''),  # 规格
                                     item.get('dw', ''),  # 单位
                                     item.get('djSq', ''),  # 价格
@@ -176,6 +176,7 @@ async def main():
 
         await browser.close()
     conn.close()
+    
 
 if __name__ == "__main__":
     asyncio.run(main())
